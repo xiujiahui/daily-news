@@ -10,6 +10,11 @@ jobs:
   run-report:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # 添加必要的权限设置，用于GitHub Pages部署
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     
     steps:
       - name: Checkout code
