@@ -1,0 +1,38 @@
+name: Daily Report
+
+on:
+  schedule:
+    # 每天UTC时间00:00运行（北京时间08:00）
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Generate daily report
+      run: |
+        echo "Daily report generation started at $(date)"
+        # 这里添加你的报告生成命令
+        # 例如：node daily-comprehensive-task.js
+        echo "Report generation completed"
+
+    - name: Commit and push report
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Update daily report - $(date)" || echo "No changes to commit"
+        git push
