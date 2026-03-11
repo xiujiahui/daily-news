@@ -35,7 +35,7 @@ jobs:
           python daily_english_report.py
       
       - name: Upload HTML report artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # 已更新为最新版本v4
         with:
           name: daily-report-html
           path: daily_report_*.html
