@@ -36,7 +36,6 @@ jobs:
           # 从GitHub Secrets读取环境变量
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: |
           python daily_english_report.py
       
@@ -54,7 +53,8 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'  # 上传当前目录下的所有文件，包括生成的HTML报告
+          # 只上传当天生成的HTML报告，避免部署旧文件
+          path: 'daily_report_*.html'
       
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
