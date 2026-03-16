@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日报告 - {today}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; background-color: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #1890ff; text-align: center; margin-bottom: 20px; font-size: 28px; }
+        .date { text-align: center; color: #666; margin-bottom: 30px; font-size: 16px; }
+        .section { margin-bottom: 30px; padding: 20px; background-color: #fafafa; border-radius: 8px; }
+        .section h2 { color: #2c3e50; margin-bottom: 15px; font-size: 20px; border-left: 4px solid #1890ff; padding-left: 10px; }
+        .weather-info { display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; margin-bottom: 15px; }
+        .weather-item { text-align: center; margin: 10px; }
+        .weather-item .label { font-size: 14px; color: #666; margin-bottom: 5px; }
+        .weather-item .value { font-size: 24px; font-weight: bold; color: #1890ff; }
+        .weather-item .description { font-size: 16px; color: #333; }
+        .weather-change { text-align: center; padding: 10px; background-color: #e8f4f8; border-radius: 5px; color: #555; }
+        .word-section { text-align: center; margin-bottom: 30px; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .word { font-size: 36px; font-weight: bold; color: #1890ff; margin-bottom: 10px; }
+        .pronunciation { font-size: 16px; color: #666; margin-bottom: 15px; }
+        .definition { font-size: 18px; margin-bottom: 15px; color: #555; line-height: 1.6; }
+        .example { font-size: 16px; color: #666; margin-bottom: 10px; padding: 10px; background-color: #f5f5f5; border-radius: 5px; }
+        .example-zh { font-size: 15px; color: #777; font-style: italic; }
+        .words-carousel-container { overflow: hidden; position: relative; }
+        .words-carousel { display: flex; transition: transform 0.3s ease; }
+        .word-section { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            background-color: white; 
+            border-radius: 8px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-width: 100%;
+            flex-shrink: 0;
+        }
+        .carousel-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .carousel-btn {
+            padding: 8px 16px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .carousel-btn:hover {
+            background-color: #40a9ff;
+        }
+        .carousel-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .carousel-dots {
+            display: flex;
+            gap: 8px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ccc;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .dot.active {
+            background-color: #1890ff;
+        }
+        .words-container { display: flex; flex-direction: column; gap: 30px; }
+        .news-list { list-style: none; }
+        .news-item { margin-bottom: 20px; padding: 15px; background-color: white; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .news-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .news-description { font-size: 14px; color: #666; margin-bottom: 10px; line-height: 1.5; }
+        .news-source { font-size: 12px; color: #999; }
+        .news-link { color: #1890ff; text-decoration: none; font-size: 12px; }
+        .news-link:hover { text-decoration: underline; }
+        .encouraging-message { background-color: #e8f4f8; padding: 20px; border-radius: 5px; line-height: 1.8; color: #27ae60; font-size: 16px; text-align: center; font-weight: bold; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 每日报告</h1>
+        <div class="date">📅 {today_chinese}</div>
+        
+        <!-- 天气模块 -->
+        <div class="section">
+            <h2>🌤️ 今日天气</h2>
+            <div class="weather-info">
+                <div class="weather-item">
+                    <div class="label">城市</div>
+                    <div class="value">{weather_city}</div>
+                </div>
+                <div class="weather-item">
+                    <div class="label">最高温度</div>
+                    <div class="value">{weather_max_temp}°C</div>
+                </div>
+                <div class="weather-item">
+                    <div class="label">最低温度</div>
+                    <div class="value">{weather_min_temp}°C</div>
+                </div>
+                <div class="weather-item">
+                    <div class="label">天气状况</div>
+                    <div class="description">{weather_desc}</div>
+                </div>
+            </div>
+            <div class="weather-change">
+                <strong>天气变化：</strong>{weather_change}
+            </div>
+        </div>
+        
+        <!-- 英语单词模块 -->
+        <div class="section">
+            <h2>📚 每日五次</h2>
+            <div class="words-carousel-container">
+                <div class="words-carousel">
+                    {words_html}
+                </div>
+                <div class="carousel-controls">
+                    <button class="carousel-btn prev-btn">← 上一个</button>
+                    <div class="carousel-dots">
+                        <span class="dot active" data-index="0"></span>
+                        <span class="dot" data-index="1"></span>
+                        <span class="dot" data-index="2"></span>
+                        <span class="dot" data-index="3"></span>
+                        <span class="dot" data-index="4"></span>
+                    </div>
+                    <button class="carousel-btn next-btn">下一个 →</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 中文新闻模块 -->
+        <div class="section">
+            <h2>📰 新闻</h2>
+            <ul class="news-list">
+                {news_html}
+            </ul>
+        </div>
+        
+        <!-- 积极鼓励话语 -->
+        <div class="section">
+            <h2>💪 学习鼓励</h2>
+            <div class="encouraging-message">
+                {encouraging_message}
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>📧 每日自动生成 | 💡 助力英语学习</p>
+        </div>
+    </div>
+    
+    <script>
+        // 单词滑动功能实现
+        document.addEventListener('DOMContentLoaded', function() {
+            const carousel = document.querySelector('.words-carousel');
+            const wordSections = document.querySelectorAll('.word-section');
+            const prevBtn = document.querySelector('.prev-btn');
+            const nextBtn = document.querySelector('.next-btn');
+            const dots = document.querySelectorAll('.dot');
+            
+            let currentIndex = 0;
+            const totalWords = wordSections.length;
+            
+            // 初始化滑动容器宽度
+            carousel.style.width = `${totalWords * 100}%`;
+            
+            // 更新UI状态
+            function updateUI() {
+                // 更新滑动位置
+                carousel.style.transform = `translateX(-${currentIndex * 100 / totalWords}%)`;
+                
+                // 更新按钮状态
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex === totalWords - 1;
+                
+                // 更新点状态
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
+            
+            // 下一个单词
+            function nextWord() {
+                if (currentIndex < totalWords - 1) {
+                    currentIndex++;
+                    updateUI();
+                }
+            }
+            
+            // 上一个单词
+            function prevWord() {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateUI();
+                }
+            }
+            
+            // 跳转到指定单词
+            function goToWord(index) {
+                if (index >= 0 && index < totalWords) {
+                    currentIndex = index;
+                    updateUI();
+                }
+            }
+            
+            // 事件监听器
+            prevBtn.addEventListener('click', prevWord);
+            nextBtn.addEventListener('click', nextWord);
+            
+            dots.forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    goToWord(index);
+                });
+            });
+            
+            // 触摸滑动支持
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            carousel.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            carousel.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+            
+            // 鼠标拖动支持
+            let mouseDownX = 0;
+            let mouseUpX = 0;
+            let isMouseDown = false;
+            
+            carousel.addEventListener('mousedown', function(e) {
+                mouseDownX = e.clientX;
+                isMouseDown = true;
+            });
+            
+            document.addEventListener('mouseup', function(e) {
+                if (!isMouseDown) return;
+                mouseUpX = e.clientX;
+                isMouseDown = false;
+                handleMouseSwipe();
+            });
+            
+            // 处理触摸滑动
+            function handleSwipe() {
+                const swipeThreshold = 50; // 滑动阈值（像素）
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // 向左滑动：下一个
+                        nextWord();
+                    } else {
+                        // 向右滑动：上一个
+                        prevWord();
+                    }
+                }
+            }
+            
+            // 处理鼠标拖动
+            function handleMouseSwipe() {
+                const swipeThreshold = 50; // 滑动阈值（像素）
+                const diff = mouseDownX - mouseUpX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // 向左拖动：下一个
+                        nextWord();
+                    } else {
+                        // 向右拖动：上一个
+                        prevWord();
+                    }
+                }
+            }
+            
+            // 键盘导航支持
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    prevWord();
+                } else if (e.key === 'ArrowRight') {
+                    nextWord();
+                }
+            });
+            
+            // 单词发音功能 - 增强版
+            let speechVoicesLoaded = false;
+            let speechVoices = [];
+            
+            // 加载语音列表
+            function loadSpeechVoices() {
+                if ('speechSynthesis' in window) {
+                    speechVoices = window.speechSynthesis.getVoices();
+                    speechVoicesLoaded = speechVoices.length > 0;
+                    console.log(`语音列表加载: ${speechVoices.length} 个语音`, 
+                                speechVoicesLoaded ? '已加载' : '空列表，可能需要用户交互');
+                    
+                    if (speechVoicesLoaded) {
+                        const englishVoices = speechVoices.filter(v => v.lang.startsWith('en-'));
+                        console.log(`找到 ${englishVoices.length} 个英语语音`);
+                    }
+                }
+            }
+            
+            // 监听语音列表变化
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.onvoiceschanged = loadSpeechVoices;
+            }
+            
+            function speakWord(word) {
+                console.log(`尝试发音: "${word}"`);
+                
+                if (!('speechSynthesis' in window)) {
+                    alert('您的浏览器不支持语音合成功能。请尝试使用Chrome、Edge或Safari浏览器。');
+                    return;
+                }
+                
+                // 如果语音列表未加载，尝试重新加载
+                if (!speechVoicesLoaded) {
+                    console.log('语音列表未加载，尝试重新加载...');
+                    loadSpeechVoices();
+                    
+                    if (!speechVoicesLoaded) {
+                        console.warn('语音列表仍然为空，发音可能失败。请点击页面任意位置后重试。');
+                        // 继续尝试，某些浏览器可能仍能工作
+                    }
+                }
+                
+                // 停止任何正在进行的语音
+                window.speechSynthesis.cancel();
+                
+                // 创建语音实例
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8; // 稍慢的语速，便于学习
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                // 选择英语语音（如果可用）
+                if (speechVoicesLoaded) {
+                    const englishVoice = speechVoices.find(voice => voice.lang.startsWith('en-'));
+                    if (englishVoice) {
+                        utterance.voice = englishVoice;
+                        console.log(`使用语音: ${englishVoice.name} (${englishVoice.lang})`);
+                    }
+                }
+                
+                // 添加详细的事件监听器
+                utterance.onstart = function() {
+                    console.log(`开始发音: "${word}"`);
+                };
+                
+                utterance.onend = function() {
+                    console.log(`发音完成: "${word}"`);
+                };
+                
+                utterance.onerror = function(event) {
+                    console.error('发音错误:', event);
+                    alert(`发音失败: ${word}\n请确保浏览器允许播放声音，并尝试点击页面其他位置后重试。`);
+                };
+                
+                // 播放语音
+                try {
+                    window.speechSynthesis.speak(utterance);
+                    console.log('语音合成已启动');
+                } catch (error) {
+                    console.error('启动语音合成失败:', error);
+                    alert('启动发音失败，请检查浏览器权限或尝试刷新页面。');
+                }
+            }
+            
+            // 为所有发音按钮添加事件监听器（改进版）
+            document.addEventListener('click', function(e) {
+                // 使用 closest 查找发音按钮，确保即使点击按钮内部元素也能工作
+                const pronunciationBtn = e.target.closest('.pronunciation-btn');
+                
+                if (pronunciationBtn) {
+                    const word = pronunciationBtn.getAttribute('data-word');
+                    console.log('点击发音按钮:', word, pronunciationBtn);
+                    
+                    // 添加视觉反馈
+                    const originalText = pronunciationBtn.textContent;
+                    pronunciationBtn.textContent = '🔊...';
+                    pronunciationBtn.style.opacity = '0.7';
+                    
+                    // 发音
+                    speakWord(word);
+                    
+                    // 恢复按钮状态
+                    setTimeout(() => {
+                        pronunciationBtn.textContent = originalText;
+                        pronunciationBtn.style.opacity = '1';
+                    }, 1000);
+                }
+            });
+            
+            // 预加载语音（某些浏览器需要用户交互后才能加载）
+            if ('speechSynthesis' in window) {
+                console.log('初始化语音合成系统...');
+                loadSpeechVoices();
+                
+                // 添加用户交互提示（仅在语音列表为空时显示）
+                setTimeout(() => {
+                    if (!speechVoicesLoaded) {
+                        console.log('提示: 语音列表可能需要在用户交互后加载。请点击页面任意位置。');
+                    }
+                }, 1000);
+            }
+            
+            // 初始化UI
+            updateUI();
+        });
+    </script>
+</body>
+</html>
